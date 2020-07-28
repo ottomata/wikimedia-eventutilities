@@ -1,4 +1,4 @@
-package org.wikimedia.eventutilities.wikimedia.event;
+package org.wikimedia.eventutilities.core.event;
 
 import java.net.URI;
 
@@ -7,7 +7,6 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import org.wikimedia.eventutilities.core.event.EventSchemaLoader;
 import org.wikimedia.eventutilities.core.json.JsonLoadingException;
 
 /**
@@ -32,28 +31,28 @@ public class EventStream {
     protected EventSchemaLoader eventSchemaLoader;
 
     /**
-     * WikimediaEventStreamConfig instance used to lookup stream config settings for this stream.
+     * EventStreamConfig instance used to lookup stream config settings for this stream.
      */
-    protected WikimediaEventStreamConfig eventStreamConfig;
+    protected EventStreamConfig eventStreamConfig;
 
-    /**
-     * Constructs a new EventStream with new EventSchemaLoader and EventStreamConfig instances
-     * created using the given URIs.
-     * @param streamName
-     * @param schemaBaseUris
-     * @param streamConfigUri
-     */
-    public EventStream(
-        String streamName,
-        List<String> schemaBaseUris,
-        String streamConfigUri
-    ) {
-        this(
-            streamName,
-            new EventSchemaLoader(schemaBaseUris),
-            new WikimediaEventStreamConfig(streamConfigUri)
-        );
-    }
+//    /**
+//     * Constructs a new EventStream with new EventSchemaLoader and EventStreamConfig instances
+//     * created using the given URIs.
+//     * @param streamName
+//     * @param schemaBaseUris
+//     * @param streamConfigUri
+//     */
+//    public EventStream(
+//        String streamName,
+//        List<String> schemaBaseUris,
+//        String streamConfigUri
+//    ) {
+//        this(
+//            streamName,
+//            new EventSchemaLoader(schemaBaseUris),
+//            new EventStreamConfig(streamConfigUri)
+//        );
+//    }
 
     /**
      * Constructs a new EventStream.
@@ -64,7 +63,7 @@ public class EventStream {
     public EventStream(
         String streamName,
         EventSchemaLoader eventSchemaLoader,
-        WikimediaEventStreamConfig eventStreamConfig
+        EventStreamConfig eventStreamConfig
     ) {
         this.streamName = streamName;
         this.eventSchemaLoader = eventSchemaLoader;
@@ -75,7 +74,7 @@ public class EventStream {
      * Gets the stream name of this EventStream instance.
      * @return
      */
-    public String getStreamName() {
+    public String streamName() {
         return streamName;
     }
 

@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +29,7 @@ public class TestEventStreamConfig {
 
     @BeforeEach
     public void setUp() throws RuntimeException {
-        streamConfigs = new EventStreamConfig(testStreamConfigsFile);
+        streamConfigs = EventStreamConfigFactory.createStaticEventStreamConfig(testStreamConfigsFile);
 
         try {
             // Read this in for test assertions

@@ -8,7 +8,6 @@ import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.wikimedia.eventutilities.core.json.JsonLoader;
 
 /**
  * Class to fetch and work with stream configuration from the a URI.
@@ -17,27 +16,31 @@ import org.wikimedia.eventutilities.core.json.JsonLoader;
  * a fetch from the result of makeStreamConfigsUriForStreams for the uncached stream names only.
  */
 public class EventStreamConfig {
-    /**
-     * Base EventStreamConfig API URL.
-     */
-    protected URI streamConfigsUri;
-
-    public interface MakeStreamConfigsUri {
-        URI apply(List<String> streamNames);
-    }
-
-    protected MakeStreamConfigsUri makeStreamConfigsUri;
 
     /**
-     * Format string used when building an EventStreamConfig API request for
-     * a specific list of streams.
+     * Stream config topics setting.  Used to get a full list of topics for streams.
      */
-    protected String streamsParamFormat;
+    public static final String TOPICS_SETTING = "topics";
 
     /**
-     * Used when joining a list of specific streams into the value of the streams param format.
+     * Stream Config setting name for schema title.
      */
-    protected String streamsParamDelimiter;
+    public static final String SCHEMA_TITLE_SETTING = "schema_title";
+
+    /**
+     * Stream Config setting name for destination event service name.
+     */
+    public static final String EVENT_SERVICE_SETTING = "destination_event_service";
+
+    /**
+     * Maps event service name to a service URL.
+     */
+    protected HashMap<String, URI> eventServiceToUriMap;
+
+    /**
+     * Used to load stream config at instantiation and on demand.
+     */
+    protected EventStreamConfigLoader eventStreamConfigLoader;
 
     /**
      * Cached stream configurations. This maps stream name (or stream pattern regex)
@@ -46,28 +49,15 @@ public class EventStreamConfig {
     protected ObjectNode streamConfigsCache;
 
     /**
-     * Constructs a simple EventStreamConfig instance that does not support
-     * per stream config lookups.  This will just load the content at the
-     * streamConfigsUriString on instantiation.
-     * @param streamConfigsUriString
+     * @param eventStreamConfigLoader
+     *  Used to load event stream config at instantiation and on demand.
      */
     public EventStreamConfig(
-        String streamConfigsUriString
+        EventStreamConfigLoader eventStreamConfigLoader,
+        HashMap<String, URI> eventServiceToUriMap
     ) {
-        this((streamNames) -> URI.create(streamConfigsUriString));
-    }
-
-    /**
-     * @param makeStreamConfigsUriLambda
-     *  Lambda function.  Given a List<String> of stream names, this should
-     *  return a URI from which stream configs for those streams should be requested.
-     *  If given an empty list, or null, this should return a URI that should be requested
-     *  to get all stream configs.
-     */
-    public EventStreamConfig(
-        MakeStreamConfigsUri makeStreamConfigsUriLambda
-    ) {
-        this.makeStreamConfigsUri = makeStreamConfigsUriLambda;
+        this.eventStreamConfigLoader = eventStreamConfigLoader;
+        this.eventServiceToUriMap = eventServiceToUriMap;
 
         // Get and store all known stream configs.
         // The stream configs endpoint should return an object mapping
@@ -80,33 +70,7 @@ public class EventStreamConfig {
      * stream configs cache.  This should fetch and cache all stream configs.
      */
     public void reset() {
-        streamConfigsCache = fetch(getStreamConfigsUri());
-    }
-
-    /**
-     * Loads the JSON stream configs result from uri
-     * @param uri
-     * @return JsonNode parsed from the value at streamConfigsUri
-     */
-    protected static ObjectNode fetch(URI uri) {
-        return (ObjectNode)JsonLoader.get(uri);
-    }
-
-    /**
-     * Calls makeStreamConfigsUri lambda with an empty List of stream names.
-     * @return
-     */
-    public URI getStreamConfigsUri() {
-        return makeStreamConfigsUri.apply(new ArrayList<String>());
-    }
-
-    /**
-     * Calls makeStreamConfigsUri lambda with a list of stream names.
-     * @param streamNames
-     * @return
-     */
-    public URI getStreamConfigsUriForStream(List<String> streamNames) {
-        return makeStreamConfigsUri.apply(streamNames);
+        streamConfigsCache = eventStreamConfigLoader.load();
     }
 
     /**
@@ -180,7 +144,7 @@ public class EventStreamConfig {
             .collect(Collectors.toList());
 
         if (!unfetchedStreams.isEmpty()) {
-            ObjectNode fetchedStreamConfigs = fetch(getStreamConfigsUriForStream(unfetchedStreams));
+            ObjectNode fetchedStreamConfigs = eventStreamConfigLoader.load(unfetchedStreams);
             streamConfigsCache.setAll(fetchedStreamConfigs);
         }
 
@@ -325,6 +289,91 @@ public class EventStreamConfig {
     }
 
     /**
+     * Get all topics settings for the a single stream.
+     * @param streamName
+     * @return
+     */
+    public String getSchemaTitle(String streamName) {
+        return getSettingAsString(streamName, SCHEMA_TITLE_SETTING);
+    }
+
+    /**
+     * Get all topics settings for all known streams.
+     * @return
+     */
+    public List<String> getAllCachedTopics() {
+        return collectAllCachedSettingsAsString(TOPICS_SETTING);
+    }
+
+    /**
+     * Get all topics settings for the a single stream.
+     * @param streamName
+     * @return
+     */
+    public List<String> getTopics(String streamName) {
+        return collectSettingAsString(streamName, TOPICS_SETTING);
+    }
+
+    /**
+     * Get all topics settings for the list of specified streams.
+     * @param streamNames
+     * @return
+     */
+    public List<String> collectTopics(List<String> streamNames) {
+        return collectSettingsAsString(streamNames, TOPICS_SETTING);
+    }
+
+    /**
+     * Gets the destination_event_service name for the specified stream.
+     * @param streamName
+     * @return
+     */
+    public String getEventServiceName(String streamName) {
+        return getSetting(streamName, EVENT_SERVICE_SETTING).asText();
+    }
+
+    /**
+     * Gets the event service POST URI of an event service.
+     * The URI is looked up in the eventServiceToUriMap.
+     * If this the eventServiceName is not defined there, returns null.
+     *
+     * Note that this function is not looking up anything in the source stream
+     * configuration; this is a static configuration provided to this EventStreamConfig
+     * class constructor that maps from destination_event_service to a URI.
+     * @param eventServiceName
+     * @return
+     */
+    public URI getEventServiceUriByName(String eventServiceName) {
+        return eventServiceToUriMap.get(eventServiceName);
+    }
+
+    /**
+     * Gets the default event serivce URI for this stream via the EVENT_SERVICE_SETTING.
+     * @param streamName
+     * @return
+     */
+    public URI getEventServiceUri(String streamName) {
+        return eventServiceToUriMap.get(getEventServiceName(streamName));
+    }
+
+    /**
+     * Gets a datacenter specific destination event service URI for this stream
+     * via the EVENT_SERVICE_SETTING + the datacenter name.
+     * @param streamName
+     * @param datacenter
+     * @return
+     */
+    public URI getEventServiceUri(String streamName, String datacenter) {
+        String destinationEventServiceName = getEventServiceName(streamName);
+        String datacenterSpecificEventServiceName = destinationEventServiceName + "-" + datacenter;
+        return getEventServiceUri(datacenterSpecificEventServiceName);
+    }
+
+    public String toString() {
+        return this.getClass() + " using " + eventStreamConfigLoader;
+    }
+
+    /**
      * Finds all values of fieldName of each element in objectNode.
      * If the found value is an array, its contents will be flattened.
      *
@@ -336,7 +385,10 @@ public class EventStreamConfig {
      * @param fieldName
      * @return
      */
-    protected static List<JsonNode> objectNodeCollectValues(ObjectNode objectNode, String fieldName) {
+    protected static List<JsonNode> objectNodeCollectValues(
+        ObjectNode objectNode,
+        String fieldName
+    ) {
         List<JsonNode> results = new ArrayList<>();
 
         for (JsonNode jsonNode : objectNode.findValues(fieldName)) {
