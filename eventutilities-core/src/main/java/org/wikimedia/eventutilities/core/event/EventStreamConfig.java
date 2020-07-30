@@ -329,7 +329,7 @@ public class EventStreamConfig {
      * @return
      */
     public String getEventServiceName(String streamName) {
-        return getSetting(streamName, EVENT_SERVICE_SETTING).asText();
+        return getSettingAsString(streamName, EVENT_SERVICE_SETTING);
     }
 
     /**
@@ -343,7 +343,7 @@ public class EventStreamConfig {
      * @param eventServiceName
      * @return
      */
-    public URI getEventServiceUriByName(String eventServiceName) {
+    public URI getEventServiceUriByServiceName(String eventServiceName) {
         return eventServiceToUriMap.get(eventServiceName);
     }
 
@@ -353,7 +353,7 @@ public class EventStreamConfig {
      * @return
      */
     public URI getEventServiceUri(String streamName) {
-        return eventServiceToUriMap.get(getEventServiceName(streamName));
+        return getEventServiceUriByServiceName(getEventServiceName(streamName));
     }
 
     /**
@@ -364,9 +364,9 @@ public class EventStreamConfig {
      * @return
      */
     public URI getEventServiceUri(String streamName, String datacenter) {
-        String destinationEventServiceName = getEventServiceName(streamName);
-        String datacenterSpecificEventServiceName = destinationEventServiceName + "-" + datacenter;
-        return getEventServiceUri(datacenterSpecificEventServiceName);
+        String defaultEventServiceName = getEventServiceName(streamName);
+        String datacenterSpecificEventServiceName = defaultEventServiceName + "-" + datacenter;
+        return getEventServiceUriByServiceName(datacenterSpecificEventServiceName);
     }
 
     public String toString() {

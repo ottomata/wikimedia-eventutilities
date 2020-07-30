@@ -51,7 +51,7 @@ public class EventStreamConfigFactory {
 
     /**
      * Creates an EventStreamConfig instance loading config from the Mediawiki EventStreamConfig
-     * extension API.
+     * extension.
      * Uses EVENT_SERVICE_TO_URI_MAP_DEFAULT.
      * @param mediawikiApiEndpoint
      * @return
@@ -92,8 +92,8 @@ public class EventStreamConfigFactory {
     public static EventStreamConfig createStaticEventStreamConfig(
         String streamConfigsUriString
     ) {
-        return new EventStreamConfig(
-            new StaticEventStreamConfigLoader(streamConfigsUriString),
+        return createStaticEventStreamConfig(
+            streamConfigsUriString,
             EVENT_SERVICE_TO_URI_MAP_DEFAULT
         );
     }

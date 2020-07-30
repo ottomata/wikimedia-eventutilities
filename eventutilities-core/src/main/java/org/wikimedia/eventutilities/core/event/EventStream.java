@@ -103,7 +103,7 @@ public class EventStream {
      * @return
      */
     public URI eventServiceUri() {
-        return eventStreamConfig.getEventServiceUri(eventServiceName());
+        return eventStreamConfig.getEventServiceUri(streamName);
     }
 
     /**
@@ -116,7 +116,7 @@ public class EventStream {
      */
     public URI eventServiceUri(String datacenter) {
         return eventStreamConfig.getEventServiceUri(
-            eventServiceName(), datacenter
+            streamName, datacenter
         );
     }
 
