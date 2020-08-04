@@ -35,25 +35,6 @@ public class EventStream {
      */
     protected EventStreamConfig eventStreamConfig;
 
-//    /**
-//     * Constructs a new EventStream with new EventSchemaLoader and EventStreamConfig instances
-//     * created using the given URIs.
-//     * @param streamName
-//     * @param schemaBaseUris
-//     * @param streamConfigUri
-//     */
-//    public EventStream(
-//        String streamName,
-//        List<String> schemaBaseUris,
-//        String streamConfigUri
-//    ) {
-//        this(
-//            streamName,
-//            new EventSchemaLoader(schemaBaseUris),
-//            new EventStreamConfig(streamConfigUri)
-//        );
-//    }
-
     /**
      * Constructs a new EventStream.
      * @param streamName
@@ -76,6 +57,14 @@ public class EventStream {
      */
     public String streamName() {
         return streamName;
+    }
+
+    /**
+     * Gets a setting from stream config for this stream.
+     * @param settingName
+     */
+    public JsonNode getSetting(String settingName) {
+        return eventStreamConfig.getSetting(streamName, settingName);
     }
 
     /**

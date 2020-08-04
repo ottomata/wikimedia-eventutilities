@@ -56,7 +56,9 @@ public class EventStreamConfigFactory {
      * @param mediawikiApiEndpoint
      * @return
      */
-    public static EventStreamConfig createMediawikiEventStreamConfig(String mediawikiApiEndpoint) {
+    public static EventStreamConfig createMediawikiEventStreamConfig(
+        String mediawikiApiEndpoint
+    ) {
         return createMediawikiEventStreamConfig(
             mediawikiApiEndpoint,
             EVENT_SERVICE_TO_URI_MAP_DEFAULT

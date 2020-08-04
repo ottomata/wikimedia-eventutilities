@@ -52,6 +52,15 @@ public class EventStreamFactory {
         this.eventStreamConfig = eventStreamConfig;
     }
 
+    /**
+     * Creates an EventStreamFactory that creates EventStreams
+     * using the Mediawiki EventStreamConfig API at mediawikiApiEndpoint.
+     *
+     * @param schemaBaseUris
+     * @param mediawikiApiEndpoint
+     * @param eventServiceToUriMap
+     * @return
+     */
     public static EventStreamFactory createMediawikiConfigEventStreamFactory(
         List<String> schemaBaseUris,
         String mediawikiApiEndpoint,
@@ -66,6 +75,15 @@ public class EventStreamFactory {
         );
     }
 
+    /**
+     * Creates an EventStreamFactory that creates EventStreams
+     * using the Mediawiki EventStreamConfig API at mediawikiApiEndpoint
+     * and the default eventServiceToUriMap
+     *
+     * @param schemaBaseUris
+     * @param mediawikiApiEndpoint
+     * @return
+     */
     public static EventStreamFactory createMediawikiConfigEventStreamFactory(
         List<String> schemaBaseUris,
         String mediawikiApiEndpoint
@@ -78,6 +96,14 @@ public class EventStreamFactory {
         );
     }
 
+    /**
+     * Creates an EventStreamFactory that creates EventStreams
+     * using the Mediawiki EventStreamConfig API at mediawikiApiEndpoint
+     * and the default mediawikiApiEndpoint and eventServiceToUriMap
+     *
+     * @param schemaBaseUris
+     * @return
+     */
     public static EventStreamFactory createMediawikiConfigEventStreamFactory(
         List<String> schemaBaseUris
     ) {
@@ -88,6 +114,14 @@ public class EventStreamFactory {
     }
 
 
+    /**
+     * Creates an EventStreamFactory that creates EventStreams
+     * using a static stream config local or remote file.
+     * @param schemaBaseUris
+     * @param streamConfigsUriString
+     * @param eventServiceToUriMap
+     * @return
+     */
     public static EventStreamFactory createStaticConfigEventStreamFactory(
         List<String> schemaBaseUris,
         String streamConfigsUriString,
@@ -102,6 +136,15 @@ public class EventStreamFactory {
         );
     }
 
+    /**
+     * Creates an EventStreamFactory that creates EventStream
+     * using a static stream config local or remote file
+     * and the default eventServiceToUriMap
+     *
+     * @param schemaBaseUris
+     * @param streamConfigsUriString
+     * @return
+     */
     public static EventStreamFactory createStaticConfigEventStreamFactory(
         List<String> schemaBaseUris,
         String streamConfigsUriString
@@ -113,7 +156,6 @@ public class EventStreamFactory {
             )
         );
     }
-
 
     /**
      * Returns a new EventStream for this streamName using eventSchemaLoader and

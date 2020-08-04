@@ -28,7 +28,7 @@ public abstract class EventStreamConfigLoader {
     }
 
     /**
-     * Loads stream configs for all (known) streams.
+     * Loads stream configs for all streams.
      * @return
      */
     public ObjectNode load() {
